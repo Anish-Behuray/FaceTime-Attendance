@@ -9,8 +9,8 @@ from firebase_admin import  storage
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://face-recognition-3f2a7-default-rtdb.firebaseio.com/",
-    'storageBucket': "face-recognition-3f2a7.appspot.com"
+    'databaseURL': "",
+    'storageBucket': ""
 })
 
 
@@ -29,9 +29,6 @@ for path in pathList:
     blob = bucket.blob(fileName)
     blob.upload_from_filename(fileName)
 
-
-    # print(path)
-    # print(os.path.splitext(path)[0])
 print(studentIds)
 
 
@@ -44,7 +41,6 @@ def findEncodings(imagesList):
         encodeList.append(encode)
 
     return encodeList
-
 
 print("Encoding Started ...")
 encodeListKnown = findEncodings(imgList)
