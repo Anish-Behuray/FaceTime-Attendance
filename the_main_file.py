@@ -14,8 +14,8 @@ from datetime import datetime
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://face-recognition-3f2a7-default-rtdb.firebaseio.com/",
-    'storageBucket': "face-recognition-3f2a7.appspot.com"
+    'databaseURL': "",
+    'storageBucket': ""
 })
 
 bucket = storage.bucket()
@@ -32,7 +32,6 @@ modePathList = os.listdir(folderModePath)
 imgModeList = []
 for path in modePathList:
     imgModeList.append(cv2.imread(os.path.join(folderModePath, path)))
-# print(len(imgModeList))
 
 # Load the encoding file
 print("Loading Encode File ...")
@@ -64,15 +63,12 @@ while True:
         for encodeFace, faceLoc in zip(encodeCurFrame, faceCurFrame):
             matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
             faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
-            # print("matches", matches)
-            # print("faceDis", faceDis)
+
 
             matchIndex = np.argmin(faceDis)
-            # print("Match Index", matchIndex)
+
 
             if matches[matchIndex]:
-                # print("Known Face Detected")
-                # print(studentIds[matchIndex])
                 y1, x2, y2, x1 = faceLoc
                 y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
                 bbox = 55 + x1, 162 + y1, x2 - x1, y2 - y1
@@ -84,10 +80,9 @@ while True:
                     cv2.waitKey(1)
                     counter = 1
                     modeType = 1
-        print("1st : "+ str(counter))
+
 
         if counter != 0:
-            print("2nd : "+ str(counter))
 
             if counter == 1:
                 # Get the Data
@@ -101,8 +96,8 @@ while True:
                 datetimeObject = datetime.strptime(studentInfo['last_attendance_time'],
                                                    "%Y-%m-%d %H:%M:%S")
                 secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
-                print(secondsElapsed)
-                if secondsElapsed > 10:
+
+                if secondsElapsed > 20:#it will give attendance to the same student after 20 sec
                     ref = db.reference(f'Students/{id}')
                     studentInfo['total_attendance'] += 1
                     ref.child('total_attendance').set(studentInfo['total_attendance'])
@@ -113,25 +108,17 @@ while True:
                     imgBackground[48:48 + 633, 832:832 + 414] = imgModeList[modeType]
 
             if modeType != 3:
-
                 if 10 < counter < 20:
-                    print("2 < counter < 3 : "+ str(counter))
+
                     modeType = 2
 
                 imgBackground[48:48 + 633, 832:832 + 414] = imgModeList[modeType]
 
                 if counter <= 10:
-                    print("counter <= 2 : "+ str(counter))
                     cv2.putText(imgBackground, str(studentInfo['total_attendance']), (1045, 647),
                                 cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 1)
                     cv2.putText(imgBackground, str(studentInfo['major']), (1004, 543),
                                 cv2.FONT_HERSHEY_COMPLEX, 0.5, (100, 100, 100), 1)
-                    # cv2.putText(imgBackground, str(id), (1006, 493),
-                    #             cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
-                    # cv2.putText(imgBackground, str(studentInfo['standing']), (910, 625),
-                    #             cv2.FONT_HERSHEY_COMPLEX, 0.6, (100, 100, 100), 1)
-                    # cv2.putText(imgBackground, str(studentInfo['year']), (1025, 625),
-                    #             cv2.FONT_HERSHEY_COMPLEX, 0.6, (100, 100, 100), 1)
                     cv2.putText(imgBackground, str(studentInfo['roll_number']), (1004, 473),
                                 cv2.FONT_HERSHEY_COMPLEX, 0.6, (100, 100, 100), 1)
 
@@ -154,6 +141,5 @@ while True:
     else:
         modeType = 0
         counter = 0
-    # cv2.imshow("Webcam", img)
     cv2.imshow("Face Attendance", imgBackground)
     cv2.waitKey(1)
